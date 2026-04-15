@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
+import CashPaymentModal from './CashPaymentModal';
 
 const COLORS = {
   primary: '#800020',
@@ -63,8 +64,10 @@ export default function PaymentMethodModal({
   totalAmount = 60,
   selectedMethod,
   onMethodChange,
+  onConfirmOrder,
 }) {
   const [internalMethod, setInternalMethod] = useState('card');
+  const [isCashModalVisible, setIsCashModalVisible] = useState(false);
 
   const activeMethod = selectedMethod || internalMethod;
 
@@ -75,10 +78,13 @@ export default function PaymentMethodModal({
   const handleSelectMethod = (methodId) => {
     if (typeof onMethodChange === 'function') {
       onMethodChange(methodId);
-      return;
+    } else {
+      setInternalMethod(methodId);
     }
 
-    setInternalMethod(methodId);
+    if (methodId === 'cash') {
+      setIsCashModalVisible(true);
+    }
   };
 
   const handleBack = () => {
@@ -92,40 +98,75 @@ export default function PaymentMethodModal({
     }
   };
 
+  const handleCloseCashModal = () => {
+    setIsCashModalVisible(false);
+
+    if (typeof onClose === 'function') {
+      onClose();
+    }
+  };
+
+  const handleBackFromCash = () => {
+    setIsCashModalVisible(false);
+  };
+
+  const handleConfirmCashOrder = (payload) => {
+    setIsCashModalVisible(false);
+
+    if (typeof onConfirmOrder === 'function') {
+      onConfirmOrder(payload);
+    }
+  };
+
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <Pressable style={styles.backdrop} onPress={onClose} />
+    <>
+      <Modal
+        visible={visible && !isCashModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={onClose}
+      >
+        <View style={styles.overlay}>
+          <Pressable style={styles.backdrop} onPress={onClose} />
 
-        <SafeAreaView style={styles.sheet} edges={['bottom']}>
-          <View style={styles.handle} />
+          <SafeAreaView style={styles.sheet} edges={['bottom']}>
+            <View style={styles.handle} />
 
-          <View style={styles.header}>
-            <TouchableOpacity style={styles.backButton} activeOpacity={0.85} onPress={handleBack}>
-              <Feather name="arrow-left" size={25} color={COLORS.text} />
-            </TouchableOpacity>
+            <View style={styles.header}>
+              <TouchableOpacity style={styles.backButton} activeOpacity={0.85} onPress={handleBack}>
+                <Feather name="arrow-left" size={25} color={COLORS.text} />
+              </TouchableOpacity>
 
-            <Text style={styles.title}>Método de pago</Text>
-          </View>
+              <Text style={styles.title}>Método de pago</Text>
+            </View>
 
-          <View style={styles.optionsWrap}>
-            {paymentOptions.map((option) => (
-              <PaymentOptionCard
-                key={option.id}
-                option={option}
-                isSelected={activeMethod === option.id}
-                onPress={() => handleSelectMethod(option.id)}
-              />
-            ))}
-          </View>
+            <View style={styles.optionsWrap}>
+              {paymentOptions.map((option) => (
+                <PaymentOptionCard
+                  key={option.id}
+                  option={option}
+                  isSelected={activeMethod === option.id}
+                  onPress={() => handleSelectMethod(option.id)}
+                />
+              ))}
+            </View>
 
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryLabel}>Total a pagar</Text>
-            <Text style={styles.summaryValue}>{formattedTotal}</Text>
-          </View>
-        </SafeAreaView>
-      </View>
-    </Modal>
+            <View style={styles.summaryCard}>
+              <Text style={styles.summaryLabel}>Total a pagar</Text>
+              <Text style={styles.summaryValue}>{formattedTotal}</Text>
+            </View>
+          </SafeAreaView>
+        </View>
+      </Modal>
+
+      <CashPaymentModal
+        visible={visible && isCashModalVisible}
+        onClose={handleCloseCashModal}
+        onBack={handleBackFromCash}
+        totalAmount={totalAmount}
+        onConfirm={handleConfirmCashOrder}
+      />
+    </>
   );
 }
 

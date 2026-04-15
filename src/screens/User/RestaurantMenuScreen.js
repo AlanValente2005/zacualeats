@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import AddressSelectionScreen from './AddressSelectionScreen';
 import PaymentMethodModal from './PaymentMethodModal';
+import OrderSuccessModal from './OrderSuccessModal';
 
 const COLORS = {
   primary: '#800020',
@@ -156,6 +157,11 @@ export default function RestaurantMenuScreen({ navigation, onGoBack, restaurant 
   const [isCartModalVisible, setIsCartModalVisible] = useState(false);
   const [isAddressSelectionVisible, setIsAddressSelectionVisible] = useState(false);
   const [isPaymentMethodVisible, setIsPaymentMethodVisible] = useState(false);
+  const [isOrderSuccessVisible, setIsOrderSuccessVisible] = useState(false);
+  const [orderSummary, setOrderSummary] = useState({
+    paymentMethod: 'Efectivo',
+    totalPaid: 0,
+  });
 
   const resolvedRestaurant = useMemo(() => {
     if (!restaurant) {
@@ -226,6 +232,23 @@ export default function RestaurantMenuScreen({ navigation, onGoBack, restaurant 
   const handleBackToAddressSelection = () => {
     setIsPaymentMethodVisible(false);
     setIsAddressSelectionVisible(true);
+  };
+
+  const handleConfirmOrder = (payload) => {
+    setIsCartModalVisible(false);
+    setIsAddressSelectionVisible(false);
+    setIsPaymentMethodVisible(false);
+    setOrderSummary({
+      paymentMethod: payload?.method || 'Efectivo',
+      totalPaid: payload?.total || totalWithDelivery,
+    });
+    setIsOrderSuccessVisible(true);
+  };
+
+  const handleOrderSuccessComplete = () => {
+    setCart({});
+    setIsOrderSuccessVisible(false);
+    handleGoBack();
   };
 
   const addProduct = (productId) => {
@@ -406,6 +429,15 @@ export default function RestaurantMenuScreen({ navigation, onGoBack, restaurant 
           onClose={handleClosePaymentMethod}
           onBack={handleBackToAddressSelection}
           totalAmount={totalWithDelivery}
+          onConfirmOrder={handleConfirmOrder}
+        />
+
+        <OrderSuccessModal
+          visible={isOrderSuccessVisible}
+          paymentMethod={orderSummary.paymentMethod}
+          totalPaid={orderSummary.totalPaid}
+          onClose={() => setIsOrderSuccessVisible(false)}
+          onComplete={handleOrderSuccessComplete}
         />
 
         <View style={styles.tabBar}>
