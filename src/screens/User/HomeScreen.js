@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
+import AddressSelectionScreen, { defaultAddress } from './AddressSelectionScreen';
 
 const COLORS = {
   primary: '#800020',
@@ -139,6 +140,8 @@ function RestaurantCard({ item, onPress }) {
 export default function HomeScreen({ onSelectRestaurant }) {
   const [searchText, setSearchText] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
+  const [isAddressModalVisible, setIsAddressModalVisible] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(defaultAddress);
 
   const filteredRestaurants = useMemo(() => {
     const normalizedSearch = searchText.trim().toLowerCase();
@@ -159,6 +162,18 @@ export default function HomeScreen({ onSelectRestaurant }) {
     });
   }, [activeCategory, searchText]);
 
+  const addressSummary = useMemo(() => {
+    return [selectedAddress.street, selectedAddress.neighborhood].filter(Boolean).join(', ');
+  }, [selectedAddress.neighborhood, selectedAddress.street]);
+
+  const handleOpenAddressModal = () => {
+    setIsAddressModalVisible(true);
+  };
+
+  const handleCloseAddressModal = () => {
+    setIsAddressModalVisible(false);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <View style={styles.container}>
@@ -172,16 +187,20 @@ export default function HomeScreen({ onSelectRestaurant }) {
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={
             <View>
-              <View style={styles.header}>
+              <TouchableOpacity
+                style={styles.header}
+                activeOpacity={0.9}
+                onPress={handleOpenAddressModal}
+              >
                 <View style={styles.locationIconWrap}>
                   <Ionicons name="location-sharp" size={20} color={COLORS.primary} />
                 </View>
                 <View style={styles.headerTextWrap}>
                   <Text style={styles.headerEyebrow}>Entregar en</Text>
-                  <Text style={styles.headerTitle}>Casa</Text>
-                  <Text style={styles.headerAddress}>Av. Juarez #45, Centro</Text>
+                  <Text style={styles.headerTitle}>{selectedAddress.label}</Text>
+                  <Text style={styles.headerAddress}>{addressSummary}</Text>
                 </View>
-              </View>
+              </TouchableOpacity>
 
               <View style={styles.searchBar}>
                 <Feather name="search" size={22} color={COLORS.lightMuted} />
@@ -241,6 +260,14 @@ export default function HomeScreen({ onSelectRestaurant }) {
             <Text style={styles.tabLabel}>Perfil</Text>
           </TouchableOpacity>
         </View>
+
+        <AddressSelectionScreen
+          visible={isAddressModalVisible}
+          onClose={handleCloseAddressModal}
+          onContinue={handleCloseAddressModal}
+          selectedAddress={selectedAddress}
+          onAddressChange={setSelectedAddress}
+        />
       </View>
     </SafeAreaView>
   );

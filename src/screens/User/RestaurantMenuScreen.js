@@ -3,6 +3,8 @@ import {
   FlatList,
   Image,
   ImageBackground,
+  Modal,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -10,6 +12,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
+import AddressSelectionScreen from './AddressSelectionScreen';
+import PaymentMethodModal from './PaymentMethodModal';
 
 const COLORS = {
   primary: '#800020',
@@ -68,6 +72,40 @@ function SeparatorDot() {
   return <View style={styles.separatorDot} />;
 }
 
+function CartItemRow({ item, quantity, onIncrement, onDecrement }) {
+  const isMaxQuantity = quantity >= 3;
+
+  return (
+    <View style={styles.cartItemCard}>
+      <Image source={{ uri: item.image }} style={styles.cartItemImage} />
+
+      <View style={styles.cartItemInfo}>
+        <Text style={styles.cartItemTitle} numberOfLines={2} ellipsizeMode="tail">
+          {item.name}
+        </Text>
+        <Text style={styles.cartItemPrice}>{item.price}</Text>
+      </View>
+
+      <View style={styles.cartQuantityControl}>
+        <TouchableOpacity style={styles.cartQuantityButton} activeOpacity={0.85} onPress={onDecrement}>
+          <Feather name="minus" size={16} color={COLORS.surface} />
+        </TouchableOpacity>
+
+        <Text style={styles.cartQuantityText}>{quantity}</Text>
+
+        <TouchableOpacity
+          style={[styles.cartQuantityButton, isMaxQuantity && styles.quantityButtonDisabled]}
+          activeOpacity={0.85}
+          onPress={onIncrement}
+          disabled={isMaxQuantity}
+        >
+          <Feather name="plus" size={16} color={COLORS.surface} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
 function MenuItemCard({ item, quantity, onAdd, onIncrement, onDecrement }) {
   const isMaxQuantity = quantity >= 3;
 
@@ -115,6 +153,9 @@ function MenuItemCard({ item, quantity, onAdd, onIncrement, onDecrement }) {
 
 export default function RestaurantMenuScreen({ navigation, onGoBack, restaurant }) {
   const [cart, setCart] = useState({});
+  const [isCartModalVisible, setIsCartModalVisible] = useState(false);
+  const [isAddressSelectionVisible, setIsAddressSelectionVisible] = useState(false);
+  const [isPaymentMethodVisible, setIsPaymentMethodVisible] = useState(false);
 
   const resolvedRestaurant = useMemo(() => {
     if (!restaurant) {
@@ -144,6 +185,15 @@ export default function RestaurantMenuScreen({ navigation, onGoBack, restaurant 
     }, 0);
   }, [cart, resolvedRestaurant.menu]);
 
+  const deliveryFee = useMemo(() => priceToNumber(resolvedRestaurant.deliveryFee), [resolvedRestaurant.deliveryFee]);
+
+  const totalWithDelivery = totalItems > 0 ? totalPrice + deliveryFee : totalPrice;
+
+  const cartItems = useMemo(
+    () => resolvedRestaurant.menu.filter((item) => (cart[item.id] || 0) > 0),
+    [cart, resolvedRestaurant.menu]
+  );
+
   const handleGoBack = () => {
     if (typeof onGoBack === 'function') {
       onGoBack();
@@ -153,6 +203,29 @@ export default function RestaurantMenuScreen({ navigation, onGoBack, restaurant 
     if (navigation?.goBack) {
       navigation.goBack();
     }
+  };
+
+  const handleOpenAddressSelection = () => {
+    setIsCartModalVisible(false);
+    setIsAddressSelectionVisible(true);
+  };
+
+  const handleCloseAddressSelection = () => {
+    setIsAddressSelectionVisible(false);
+  };
+
+  const handleContinueToPayment = () => {
+    setIsAddressSelectionVisible(false);
+    setIsPaymentMethodVisible(true);
+  };
+
+  const handleClosePaymentMethod = () => {
+    setIsPaymentMethodVisible(false);
+  };
+
+  const handleBackToAddressSelection = () => {
+    setIsPaymentMethodVisible(false);
+    setIsAddressSelectionVisible(true);
   };
 
   const addProduct = (productId) => {
@@ -253,7 +326,11 @@ export default function RestaurantMenuScreen({ navigation, onGoBack, restaurant 
         />
 
         {totalItems > 0 ? (
-          <TouchableOpacity style={styles.cartBar} activeOpacity={0.92}>
+          <TouchableOpacity
+            style={styles.cartBar}
+            activeOpacity={0.92}
+            onPress={() => setIsCartModalVisible(true)}
+          >
             <View style={styles.cartBarLeft}>
               <Feather name="shopping-cart" size={22} color={COLORS.surface} />
               <Text style={styles.cartBarCount}>{totalItems}</Text>
@@ -264,6 +341,72 @@ export default function RestaurantMenuScreen({ navigation, onGoBack, restaurant 
             <Text style={styles.cartBarText}>Ver carrito ${totalPrice.toFixed(2)}</Text>
           </TouchableOpacity>
         ) : null}
+
+        <Modal
+          visible={isCartModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setIsCartModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <Pressable style={styles.modalBackdrop} onPress={() => setIsCartModalVisible(false)} />
+
+            <View style={styles.cartSheet}>
+              <View style={styles.cartSheetHandle} />
+              <Text style={styles.cartSheetTitle}>Tu Carrito</Text>
+
+              <View style={styles.cartSheetContent}>
+                {cartItems.map((item) => (
+                  <CartItemRow
+                    key={item.id}
+                    item={item}
+                    quantity={cart[item.id] || 0}
+                    onIncrement={() => incrementProduct(item.id)}
+                    onDecrement={() => decrementProduct(item.id)}
+                  />
+                ))}
+
+                <View style={styles.cartSummaryDivider} />
+
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Subtotal</Text>
+                  <Text style={styles.summaryValue}>${totalPrice.toFixed(2)}</Text>
+                </View>
+
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Envío</Text>
+                  <Text style={styles.summaryValue}>${deliveryFee.toFixed(2)}</Text>
+                </View>
+
+                <View style={styles.summaryRow}>
+                  <Text style={styles.totalLabel}>Total</Text>
+                  <Text style={styles.totalValue}>${totalWithDelivery.toFixed(2)}</Text>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.continueButton}
+                  activeOpacity={0.9}
+                  onPress={handleOpenAddressSelection}
+                >
+                  <Text style={styles.continueButtonText}>Continuar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        <AddressSelectionScreen
+          visible={isAddressSelectionVisible}
+          onClose={handleCloseAddressSelection}
+          onContinue={handleContinueToPayment}
+        />
+
+        <PaymentMethodModal
+          visible={isPaymentMethodVisible}
+          onClose={handleClosePaymentMethod}
+          onBack={handleBackToAddressSelection}
+          totalAmount={totalWithDelivery}
+        />
 
         <View style={styles.tabBar}>
           <TouchableOpacity style={styles.tabItem} activeOpacity={0.85}>
@@ -502,6 +645,136 @@ const styles = StyleSheet.create({
     color: COLORS.surface,
     fontSize: 16,
     fontWeight: '700',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalBackdrop: {
+    flex: 1,
+  },
+  cartSheet: {
+    backgroundColor: COLORS.surface,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingTop: 12,
+    paddingBottom: 22,
+  },
+  cartSheetHandle: {
+    width: 82,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#E8DFD7',
+    alignSelf: 'center',
+    marginBottom: 22,
+  },
+  cartSheetTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.text,
+    paddingHorizontal: 22,
+    marginBottom: 18,
+  },
+  cartSheetContent: {
+    paddingHorizontal: 22,
+  },
+  cartItemCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FBF7F4',
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+  },
+  cartItemImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 20,
+    marginRight: 16,
+  },
+  cartItemInfo: {
+    flex: 1,
+    minWidth: 0,
+    paddingRight: 12,
+  },
+  cartItemTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  cartItemPrice: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  cartQuantityControl: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.quantityBg,
+    borderRadius: 22,
+    height: 44,
+    paddingHorizontal: 6,
+  },
+  cartQuantityButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cartQuantityText: {
+    minWidth: 28,
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginHorizontal: 10,
+  },
+  cartSummaryDivider: {
+    height: 1,
+    backgroundColor: '#EFE5DF',
+    marginVertical: 22,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  summaryLabel: {
+    fontSize: 16,
+    color: COLORS.muted,
+  },
+  summaryValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  totalLabel: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  totalValue: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  continueButton: {
+    marginTop: 20,
+    backgroundColor: '#6F4E37',
+    borderRadius: 25,
+    minHeight: 58,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  continueButtonText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.surface,
   },
   tabBar: {
     position: 'absolute',
