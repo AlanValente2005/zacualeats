@@ -439,30 +439,6 @@ export default function RestaurantMenuScreen({ navigation, onGoBack, restaurant 
           onClose={() => setIsOrderSuccessVisible(false)}
           onComplete={handleOrderSuccessComplete}
         />
-
-        <View style={styles.tabBar}>
-          <TouchableOpacity style={styles.tabItem} activeOpacity={0.85}>
-            <Feather name="home" size={24} color={COLORS.muted} />
-            <Text style={styles.tabLabel}>Inicio</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.tabItem} activeOpacity={0.85}>
-            <View style={styles.tabIconWrap}>
-              <Feather name="shopping-bag" size={24} color={COLORS.muted} />
-              {totalItems > 0 ? (
-                <View style={styles.tabBadge}>
-                  <Text style={styles.tabBadgeText}>{totalItems}</Text>
-                </View>
-              ) : null}
-            </View>
-            <Text style={styles.tabLabel}>Pedidos</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.tabItem} activeOpacity={0.85}>
-            <Feather name="user" size={24} color={COLORS.muted} />
-            <Text style={styles.tabLabel}>Perfil</Text>
-          </TouchableOpacity>
-        </View>
       </View>
     </SafeAreaView>
   );
@@ -807,58 +783,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: COLORS.surface,
-  },
-  tabBar: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    backgroundColor: COLORS.surface,
-    paddingTop: 14,
-    paddingBottom: 26,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 14,
-  },
-  tabItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabIconWrap: {
-    position: 'relative',
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -9,
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  tabBadgeText: {
-    color: COLORS.surface,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  tabLabel: {
-    marginTop: 8,
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.muted,
   },
 });

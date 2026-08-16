@@ -242,25 +242,6 @@ export default function HomeScreen({ onSelectRestaurant }) {
           }
         />
 
-        <View style={styles.tabBar}>
-          <TouchableOpacity style={styles.tabItem} activeOpacity={0.85}>
-            <View style={styles.activeTabIconWrap}>
-              <Feather name="home" size={24} color={COLORS.surface} />
-            </View>
-            <Text style={styles.activeTabLabel}>Inicio</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.tabItem} activeOpacity={0.85}>
-            <Feather name="shopping-bag" size={24} color={COLORS.muted} />
-            <Text style={styles.tabLabel}>Pedidos</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.tabItem} activeOpacity={0.85}>
-            <Feather name="user" size={24} color={COLORS.muted} />
-            <Text style={styles.tabLabel}>Perfil</Text>
-          </TouchableOpacity>
-        </View>
-
         <AddressSelectionScreen
           visible={isAddressModalVisible}
           onClose={handleCloseAddressModal}
@@ -478,48 +459,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: COLORS.muted,
     textAlign: 'center',
-  },
-  tabBar: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    backgroundColor: COLORS.surface,
-    paddingTop: 14,
-    paddingBottom: 26,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 14,
-  },
-  tabItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  activeTabIconWrap: {
-    width: 46,
-    height: 46,
-    borderRadius: 16,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  activeTabLabel: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
-  tabLabel: {
-    marginTop: 8,
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.muted,
   },
 });

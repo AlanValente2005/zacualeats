@@ -162,22 +162,6 @@ export default function RestaurantDetailScreen({ navigation, onGoBack, restauran
           }
         />
 
-        <View style={styles.tabBar}>
-          <TouchableOpacity style={styles.tabItem} activeOpacity={0.85}>
-            <Feather name="home" size={24} color={COLORS.muted} />
-            <Text style={styles.tabLabel}>Inicio</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.tabItem} activeOpacity={0.85}>
-            <Feather name="shopping-bag" size={24} color={COLORS.muted} />
-            <Text style={styles.tabLabel}>Pedidos</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.tabItem} activeOpacity={0.85}>
-            <Feather name="user" size={24} color={COLORS.muted} />
-            <Text style={styles.tabLabel}>Perfil</Text>
-          </TouchableOpacity>
-        </View>
       </View>
     </SafeAreaView>
   );
@@ -316,34 +300,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowRadius: 6,
     elevation: 3,
-  },
-  tabBar: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    backgroundColor: COLORS.surface,
-    paddingTop: 14,
-    paddingBottom: 26,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 14,
-  },
-  tabItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabLabel: {
-    marginTop: 8,
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.muted,
   },
 });
